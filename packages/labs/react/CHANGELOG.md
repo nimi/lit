@@ -1,5 +1,23 @@
 # Change Log
 
+## 1.0.4
+
+### Patch Changes
+
+- [#2678](https://github.com/lit/lit/pull/2678) [`80e701e2`](https://github.com/lit/lit/commit/80e701e25cfac71d220acb646c6f4964c829de84) - Skip the \_\_forwardedRef when passing component props to element.
+
+## 1.0.3
+
+### Patch Changes
+
+- [#2648](https://github.com/lit/lit/pull/2648) [`7cb492a3`](https://github.com/lit/lit/commit/7cb492a37352ea2402f783bf83fa0bef7ed29036) - Event callbacks can be typed by casting with EventHandler
+
+## 1.0.2
+
+### Patch Changes
+
+- [#2410](https://github.com/lit/lit/pull/2410) [`b9a6962b`](https://github.com/lit/lit/commit/b9a6962b84c841eaabd5c4cbf8687ff34dbfe511) - Correct the link path of CONTRIBUTING.md in README.md files
+
 ## 1.0.1
 
 ### Patch Changes

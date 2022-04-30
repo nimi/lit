@@ -28,6 +28,9 @@ const PACKAGE_CLASS_PREFIXES = {
   '@lit-labs/scoped-registry-mixin': '_$H',
   '@lit-labs/ssr-client': '_$I',
   '@lit-labs/task': '_$J',
+  '@lit-labs/router': '_$K',
+  '@lit-labs/observers': '_$L',
+  '@lit-labs/context': '_$M',
 };
 
 // Validate prefix uniqueness
@@ -407,12 +410,14 @@ export function litProdConfig({
             ]),
       ],
     },
-    ...bundled.map(({file, output, name}) =>
+    ...bundled.map(({file, output, name, format, sourcemapPathTransform}) =>
       litMonoBundleConfig({
         file,
         output,
         name,
         terserOptions,
+        format,
+        sourcemapPathTransform,
       })
     ),
   ];
@@ -423,14 +428,17 @@ const litMonoBundleConfig = ({
   output,
   name,
   terserOptions,
+  format = 'umd',
+  sourcemapPathTransform,
   // eslint-disable-next-line no-undef
 } = options) => ({
   input: `development/${file}.js`,
   output: {
     file: `${output || file}.js`,
-    format: 'umd',
+    format,
     name,
     sourcemap: !CHECKSIZE,
+    sourcemapPathTransform,
   },
   plugins: [
     nodeResolve(),

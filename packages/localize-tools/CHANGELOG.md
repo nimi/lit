@@ -1,5 +1,65 @@
 # Changelog
 
+## 0.6.3
+
+### Patch Changes
+
+- [#2732](https://github.com/lit/lit/pull/2732) [`3e181bcb`](https://github.com/lit/lit/commit/3e181bcb3d969775eda799fd6fcae1ead843225b) - Enforce use of file extensions in imports. Fixes an issue with older TypeScript compilers.
+
+## 0.6.2
+
+### Patch Changes
+
+- [#2692](https://github.com/lit/lit/pull/2692) [`c41a92c9`](https://github.com/lit/lit/commit/c41a92c96eeb8c2db4875c94c2eabcd512e044c4) - Fix issue with placing expressions as html attribute values in transform mode
+
+## 0.6.1
+
+### Patch Changes
+
+- [#2561](https://github.com/lit/lit/pull/2561) [`6be4ac29`](https://github.com/lit/lit/commit/6be4ac29d7fe786790471cd3c67217bc7865b4cb) - Reorder xliff `<note>` elements to follow `<target>` elements to be OASIS-compliant
+
+- Updated dependencies [[`2c9d0008`](https://github.com/lit/lit/commit/2c9d00082a416457ee02107013dd4925bf589628)]:
+  - lit@2.2.0
+
+## 0.6.0
+
+### Minor Changes
+
+- [#2405](https://github.com/lit/lit/pull/2405) [`4a4afa7b`](https://github.com/lit/lit/commit/4a4afa7bd394938102d8604ec6aff2e9eaf17c88) - **BREAKING** Update analysis to consider messages with same id **and** description to be identical (but no longer checks for expressions to be same) and improve error message on finding incompatible duplicates.
+
+  `lit-localize extract` will now error if multiple messages had the same text but different `desc` option. Be sure to add the same `desc` option for these messages to be considered the same translatable message or add different `id` options to differentiate them.
+
+- [#2405](https://github.com/lit/lit/pull/2405) [`4a4afa7b`](https://github.com/lit/lit/commit/4a4afa7bd394938102d8604ec6aff2e9eaf17c88) - **BREAKING** (XLB format only) Add index to `name` attribute for `<ph>` tags for tracking placeholder locations.
+
+  XLB format users should run `lit-localize extract` to regenerate the `.xlb` file for the source locale and make sure the `<ph>` tags in other locale files have matching `name` attribute values to that of the newly generated source file.
+
+### Patch Changes
+
+- [#2402](https://github.com/lit/lit/pull/2402) [`a638841d`](https://github.com/lit/lit/commit/a638841d8ba76e43cf83a2516e2cfc7a9c2ce27e) - Trivial: reformat markdown files
+
+## 0.5.0
+
+### Minor Changes
+
+- [#2275](https://github.com/lit/lit/pull/2275) [`97f4a3f8`](https://github.com/lit/lit/commit/97f4a3f8f6cd14a8b8ded90ca814335b00ac9a94) - **BREAKING** Placeholders containing HTML markup and dynamic expressions are now
+  represented in XLIFF as `<x>` tags instead of `<ph>` tags.
+
+  To preserve the previous behavior of using `<ph>` tags, update your JSON config
+  file and set `interchange.placeholderStyle` to `"ph"`:
+
+  ```json
+  {
+    "interchange": {
+      "format": "xliff",
+      "placeholderStyle": "ph"
+    }
+  }
+  ```
+
+### Patch Changes
+
+- [#2286](https://github.com/lit/lit/pull/2286) [`52c4f32e`](https://github.com/lit/lit/commit/52c4f32e7aa67120364a9c64a1696909c711ff88) - Update README to point to new full docs at lit.dev
+
 ## 0.4.0
 
 ### Minor Changes
@@ -136,19 +196,11 @@ Before:
 class HomePage {
   hello() {
     // msgdesc: Greeting to Earth
-    return msg(
-      html`
-        Hello World
-      `
-    );
+    return msg(html`Hello World`);
   }
   goodbye() {
     // msgdesc: Farewell to Earth
-    return msg(
-      html`
-        Goodbye World
-      `
-    );
+    return msg(html`Goodbye World`);
   }
 }
 ```
@@ -158,24 +210,14 @@ After:
 ```js
 class HomePage {
   hello() {
-    return msg(
-      html`
-        Hello World
-      `,
-      {
-        desc: 'Home page / Greeting to Earth'
-      }
-    );
+    return msg(html`Hello World`, {
+      desc: 'Home page / Greeting to Earth',
+    });
   }
   goodbye() {
-    return msg(
-      html`
-        Goodbye World
-      `,
-      {
-        desc: 'Home page / Farewell to Earth'
-      }
-    );
+    return msg(html`Goodbye World`, {
+      desc: 'Home page / Farewell to Earth',
+    });
   }
 }
 ```

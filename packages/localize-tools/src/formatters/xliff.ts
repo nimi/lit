@@ -11,7 +11,7 @@ import type {Config} from '../types/config.js';
 import type {XliffConfig} from '../types/formatters.js';
 import type {Locale} from '../types/locale.js';
 import {Formatter} from './index.js';
-import {KnownError} from '../error.js';
+import {KnownError, unreachable} from '../error.js';
 import {
   Bundle,
   Message,
@@ -110,6 +110,18 @@ export class XliffFormatter implements Formatter {
           contents.push(child.nodeValue || '');
         } else if (
           child.nodeType === doc.ELEMENT_NODE &&
+          child.nodeName === 'x'
+        ) {
+          const phText = getNonEmptyAttributeOrThrow(
+            child as Element,
+            'equiv-text'
+          );
+          const index = Number(
+            getNonEmptyAttributeOrThrow(child as Element, 'id')
+          );
+          contents.push({untranslatable: phText, index});
+        } else if (
+          child.nodeType === doc.ELEMENT_NODE &&
           child.nodeName === 'ph'
         ) {
           const phText = child.childNodes[0];
@@ -118,9 +130,14 @@ export class XliffFormatter implements Formatter {
             !phText ||
             phText.nodeType !== doc.TEXT_NODE
           ) {
-            throw new KnownError(`Expected <ph> to have exactly one text node`);
+            throw new KnownError(
+              `Expected <${child.nodeName}> to have exactly one text node`
+            );
           }
-          contents.push({untranslatable: phText.nodeValue || ''});
+          const index = Number(
+            getNonEmptyAttributeOrThrow(child as Element, 'id')
+          );
+          contents.push({untranslatable: phText.nodeValue || '', index});
         } else {
           throw new KnownError(
             `Unexpected node in <trans-unit>: ${child.nodeType} ${child.nodeName}`
@@ -205,8 +222,8 @@ export class XliffFormatter implements Formatter {
     // TODO The spec requires the source filename in the "original" attribute,
     // but we don't currently track filenames.
     file.setAttribute('original', 'lit-localize-inputs');
-    // Plaintext seems right, as opposed to HTML, since our translatable
-    // message text is just text, and all HTML markup is encoded into <ph>
+    // Plaintext seems right, as opposed to HTML, since our translatable message
+    // text is just text, and all HTML markup is encoded into <x> or <ph>
     // elements.
     file.setAttribute('datatype', 'plaintext');
     indent(file);
@@ -222,14 +239,6 @@ export class XliffFormatter implements Formatter {
       body.appendChild(transUnit);
       indent(transUnit, 1);
       transUnit.setAttribute('id', name);
-
-      if (desc) {
-        // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#note
-        const note = doc.createElement('note');
-        note.appendChild(doc.createTextNode(desc));
-        transUnit.appendChild(note);
-        indent(transUnit, 1);
-      }
 
       // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#source
       const source = doc.createElement('source');
@@ -248,6 +257,15 @@ export class XliffFormatter implements Formatter {
         indent(transUnit, 1);
         transUnit.appendChild(target);
       }
+
+      if (desc) {
+        // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#note
+        const note = doc.createElement('note');
+        note.appendChild(doc.createTextNode(desc));
+        indent(transUnit, 1);
+        transUnit.appendChild(note);
+      }
+
       indent(transUnit);
       indent(body);
     }
@@ -271,14 +289,34 @@ export class XliffFormatter implements Formatter {
       if (typeof content === 'string') {
         nodes.push(doc.createTextNode(content));
       } else {
-        const {untranslatable} = content;
-        // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#ph
-        const ph = doc.createElement('ph');
-        ph.setAttribute('id', String(phIdx++));
-        ph.appendChild(doc.createTextNode(untranslatable));
-        nodes.push(ph);
+        nodes.push(this.createPlaceholder(doc, String(phIdx++), content));
       }
     }
     return nodes;
+  }
+
+  private createPlaceholder(
+    doc: Document,
+    id: string,
+    {untranslatable}: Placeholder
+  ): HTMLElement {
+    const style = this.xliffConfig.placeholderStyle ?? 'x';
+    if (style === 'x') {
+      // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#x
+      const el = doc.createElement('x');
+      el.setAttribute('id', id);
+      el.setAttribute('equiv-text', untranslatable);
+      return el;
+    } else if (style === 'ph') {
+      // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#ph
+      const el = doc.createElement('ph');
+      el.setAttribute('id', id);
+      el.appendChild(doc.createTextNode(untranslatable));
+      return el;
+    } else {
+      throw new Error(
+        `Internal error: unknown xliff placeholderStyle: ${unreachable(style)}`
+      );
+    }
   }
 }

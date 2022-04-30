@@ -12,6 +12,202 @@ const ENABLE_EXTRA_SECURITY_HOOKS = true;
 const ENABLE_SHADYDOM_NOPATCH = true;
 
 /**
+ * Contains types that are part of the unstable debug API.
+ *
+ * Everything in this API is not stable and may change or be removed in the future,
+ * even on patch releases.
+ */
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace LitUnstable {
+  /**
+   * When Lit is running in dev mode and `window.emitLitDebugLogEvents` is true,
+   * we will emit 'lit-debug' events to window, with live details about the update and render
+   * lifecycle. These can be useful for writing debug tooling and visualizations.
+   *
+   * Please be aware that running with window.emitLitDebugLogEvents has performance overhead,
+   * making certain operations that are normally very cheap (like a no-op render) much slower,
+   * because we must copy data and dispatch events.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace DebugLog {
+    export type Entry =
+      | TemplatePrep
+      | TemplateInstantiated
+      | TemplateInstantiatedAndUpdated
+      | TemplateUpdating
+      | BeginRender
+      | EndRender
+      | CommitPartEntry
+      | SetPartValue;
+    export interface TemplatePrep {
+      kind: 'template prep';
+      template: Template;
+      strings: TemplateStringsArray;
+      clonableTemplate: HTMLTemplateElement;
+      parts: TemplatePart[];
+    }
+    export interface BeginRender {
+      kind: 'begin render';
+      id: number;
+      value: unknown;
+      container: HTMLElement | DocumentFragment;
+      options: RenderOptions | undefined;
+      part: ChildPart | undefined;
+    }
+    export interface EndRender {
+      kind: 'end render';
+      id: number;
+      value: unknown;
+      container: HTMLElement | DocumentFragment;
+      options: RenderOptions | undefined;
+      part: ChildPart;
+    }
+    export interface TemplateInstantiated {
+      kind: 'template instantiated';
+      template: Template | CompiledTemplate;
+      instance: TemplateInstance;
+      options: RenderOptions | undefined;
+      fragment: Node;
+      parts: Array<Part | undefined>;
+      values: unknown[];
+    }
+    export interface TemplateInstantiatedAndUpdated {
+      kind: 'template instantiated and updated';
+      template: Template | CompiledTemplate;
+      instance: TemplateInstance;
+      options: RenderOptions | undefined;
+      fragment: Node;
+      parts: Array<Part | undefined>;
+      values: unknown[];
+    }
+    export interface TemplateUpdating {
+      kind: 'template updating';
+      template: Template | CompiledTemplate;
+      instance: TemplateInstance;
+      options: RenderOptions | undefined;
+      parts: Array<Part | undefined>;
+      values: unknown[];
+    }
+    export interface SetPartValue {
+      kind: 'set part';
+      part: Part;
+      value: unknown;
+      valueIndex: number;
+      values: unknown[];
+      templateInstance: TemplateInstance;
+    }
+
+    export type CommitPartEntry =
+      | CommitNothingToChildEntry
+      | CommitText
+      | CommitNode
+      | CommitAttribute
+      | CommitProperty
+      | CommitBooleanAttribute
+      | CommitEventListener
+      | CommitToElementBinding;
+
+    export interface CommitNothingToChildEntry {
+      kind: 'commit nothing to child';
+      start: ChildNode;
+      end: ChildNode | null;
+      parent: Disconnectable | undefined;
+      options: RenderOptions | undefined;
+    }
+
+    export interface CommitText {
+      kind: 'commit text';
+      node: Text;
+      value: unknown;
+      options: RenderOptions | undefined;
+    }
+
+    export interface CommitNode {
+      kind: 'commit node';
+      start: Node;
+      parent: Disconnectable | undefined;
+      value: Node;
+      options: RenderOptions | undefined;
+    }
+
+    export interface CommitAttribute {
+      kind: 'commit attribute';
+      element: Element;
+      name: string;
+      value: unknown;
+      options: RenderOptions | undefined;
+    }
+
+    export interface CommitProperty {
+      kind: 'commit property';
+      element: Element;
+      name: string;
+      value: unknown;
+      options: RenderOptions | undefined;
+    }
+
+    export interface CommitBooleanAttribute {
+      kind: 'commit boolean attribute';
+      element: Element;
+      name: string;
+      value: boolean;
+      options: RenderOptions | undefined;
+    }
+
+    export interface CommitEventListener {
+      kind: 'commit event listener';
+      element: Element;
+      name: string;
+      value: unknown;
+      oldListener: unknown;
+      options: RenderOptions | undefined;
+      // True if we're removing the old event listener (e.g. because settings changed, or value is nothing)
+      removeListener: boolean;
+      // True if we're adding a new event listener (e.g. because first render, or settings changed)
+      addListener: boolean;
+    }
+
+    export interface CommitToElementBinding {
+      kind: 'commit to element binding';
+      element: Element;
+      value: unknown;
+      options: RenderOptions | undefined;
+    }
+  }
+}
+
+interface DebugLoggingWindow {
+  // Even in dev mode, we generally don't want to emit these events, as that's
+  // another level of cost, so only emit them when DEV_MODE is true _and_ when
+  // window.emitLitDebugEvents is true.
+  emitLitDebugLogEvents?: boolean;
+}
+
+/**
+ * Useful for visualizing and logging insights into what the Lit template system is doing.
+ *
+ * Compiled out of prod mode builds.
+ */
+const debugLogEvent = DEV_MODE
+  ? (event: LitUnstable.DebugLog.Entry) => {
+      const shouldEmit = (window as unknown as DebugLoggingWindow)
+        .emitLitDebugLogEvents;
+      if (!shouldEmit) {
+        return;
+      }
+      window.dispatchEvent(
+        new CustomEvent<LitUnstable.DebugLog.Entry>('lit-debug', {
+          detail: event,
+        })
+      );
+    }
+  : undefined;
+// Used for connecting beginRender and endRender events when there are nested
+// renders when errors are thrown preventing an endRender event from being
+// called.
+let debugLogRenderId = 0;
+
+/**
  * `true` if we're building for google3 with temporary back-compat helpers.
  * This export is not present in prod builds.
  * @internal
@@ -235,7 +431,7 @@ const doubleQuoteAttrEndRegex = /"/g;
  * Comments are not parsed within raw text elements, so we need to search their
  * text content for marker strings.
  */
-const rawTextElement = /^(?:script|style|textarea)$/i;
+const rawTextElement = /^(?:script|style|textarea|title)$/i;
 
 /** TemplateResult types */
 const HTML_RESULT = 1;
@@ -323,8 +519,27 @@ const tag =
 export const html = tag(HTML_RESULT);
 
 /**
- * Interprets a template literal as an SVG template that can efficiently
+ * Interprets a template literal as an SVG fragment that can efficiently
  * render to and update a container.
+ *
+ * ```ts
+ * const rect = svg`<rect width="10" height="10"></rect>`;
+ *
+ * const myImage = html`
+ *   <svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
+ *     ${rect}
+ *   </svg>`;
+ * ```
+ *
+ * The `svg` *tag function* should only be used for SVG fragments, or elements
+ * that would be contained **inside** an `<svg>` HTML element. A common error is
+ * placing an `<svg>` *element* in a template tagged with the `svg` tag
+ * function. The `<svg>` element is an HTML element and should be used within a
+ * template tagged with the {@linkcode html} tag function.
+ *
+ * In LitElement usage, it's invalid to return an SVG fragment from the
+ * `render()` method, as the SVG fragment will be contained within the element's
+ * shadow root and thus cannot be used within an `<svg>` HTML element.
  */
 export const svg = tag(SVG_RESULT);
 
@@ -422,10 +637,26 @@ export const render = (
   container: HTMLElement | DocumentFragment,
   options?: RenderOptions
 ): RootPart => {
+  if (DEV_MODE && container == null) {
+    // Give a clearer error message than
+    //     Uncaught TypeError: Cannot read properties of null (reading
+    //     '_$litPart$')
+    // which reads like an internal Lit error.
+    throw new TypeError(`The container to render into may not be ${container}`);
+  }
+  const renderId = DEV_MODE ? debugLogRenderId++ : 0;
   const partOwnerNode = options?.renderBefore ?? container;
   // This property needs to remain unminified.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let part: ChildPart = (partOwnerNode as any)['_$litPart$'];
+  debugLogEvent?.({
+    kind: 'begin render',
+    id: renderId,
+    value,
+    container,
+    options,
+    part,
+  });
   if (part === undefined) {
     const endNode = options?.renderBefore ?? null;
     // Internal modification: don't clear container to match lit-html 2.0
@@ -453,6 +684,14 @@ export const render = (
     );
   }
   part._$setValue([value], undefined, 0);
+  debugLogEvent?.({
+    kind: 'end render',
+    id: renderId,
+    value,
+    container,
+    options,
+    part,
+  });
   return part as RootPart;
 };
 
@@ -654,6 +893,31 @@ const getTemplateHtml = (
   const htmlResult: string | TrustedHTML =
     html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : '');
 
+  // A security check to prevent spoofing of Lit template results.
+  // In the future, we may be able to replace this with Array.isTemplateObject,
+  // though we might need to make that check inside of the html and svg
+  // functions, because precompiled templates don't come in as
+  // TemplateStringArray objects.
+  if (!Array.isArray(strings) || !strings.hasOwnProperty('raw')) {
+    let message = 'invalid template strings array';
+    if (DEV_MODE) {
+      message = `
+          Internal Error: expected template strings to be an array
+          with a 'raw' field. Faking a template strings array by
+          calling html or svg like an ordinary function is effectively
+          the same as calling unsafeHtml and can lead to major security
+          issues, e.g. opening your code up to XSS attacks.
+
+          If you're using the html or svg tagged template functions normally
+          and and still seeing this error, please file a bug at
+          https://github.com/lit/lit/issues/new?template=bug_report.md
+          and include information about your build tooling, if any.
+        `
+        .trim()
+        .replace(/\n */g, '\n');
+    }
+    throw new Error(message);
+  }
   // Returned as an array for terseness
   return [
     policy !== undefined
@@ -818,6 +1082,13 @@ class Template {
       }
       nodeIndex++;
     }
+    debugLogEvent?.({
+      kind: 'template prep',
+      template: this,
+      clonableTemplate: this.el,
+      parts: this.parts,
+      strings,
+    });
   }
 
   // Overridden via `litHtmlPolyfillSupport` to provide platform support.
@@ -977,6 +1248,14 @@ class TemplateInstance implements Disconnectable {
     for (const part of this._parts) {
       if (part !== undefined) {
         part._$setValue(values, part, i);
+        debugLogEvent?.({
+          kind: 'set part',
+          part,
+          value: values[i],
+          valueIndex: i,
+          values,
+          templateInstance: this,
+        });
         if ((part as AttributePart).strings !== undefined) {
           // The number of values the part consumes is part.strings.length - 1
           // since values are in between template spans. We increment i by 1
@@ -1165,6 +1444,13 @@ class ChildPart implements Disconnectable {
       // fallback content.
       if (value === nothing || value == null || value === '') {
         if (this._$committedValue !== nothing) {
+          debugLogEvent?.({
+            kind: 'commit nothing to child',
+            start: this._$startNode,
+            end: this._$endNode,
+            parent: this._$parent,
+            options: this.options,
+          });
           this._$clear();
         }
         this._$committedValue = nothing;
@@ -1218,6 +1504,13 @@ class ChildPart implements Disconnectable {
           throw new Error(message);
         }
       }
+      debugLogEvent?.({
+        kind: 'commit node',
+        start: this._$startNode,
+        parent: this._$parent,
+        value: value,
+        options: this.options,
+      });
       this._$committedValue = this._insert(value);
     }
   }
@@ -1237,6 +1530,12 @@ class ChildPart implements Disconnectable {
         }
         value = this._textSanitizer(value);
       }
+      debugLogEvent?.({
+        kind: 'commit text',
+        node,
+        value,
+        options: this.options,
+      });
       (node as Text).data = value as string;
     } else {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
@@ -1245,14 +1544,26 @@ class ChildPart implements Disconnectable {
         // When setting text content, for security purposes it matters a lot
         // what the parent is. For example, <style> and <script> need to be
         // handled with care, while <span> does not. So first we need to put a
-        // text node into the document, then we can sanitize its contentx.
+        // text node into the document, then we can sanitize its content.
         if (this._textSanitizer === undefined) {
           this._textSanitizer = createSanitizer(textNode, 'data', 'property');
         }
         value = this._textSanitizer(value);
+        debugLogEvent?.({
+          kind: 'commit text',
+          node: textNode,
+          value,
+          options: this.options,
+        });
         textNode.data = value as string;
       } else {
         this._commitNode(d.createTextNode(value as string));
+        debugLogEvent?.({
+          kind: 'commit text',
+          node: wrap(this._$startNode).nextSibling as Text,
+          value,
+          options: this.options,
+        });
       }
     }
     this._$committedValue = value;
@@ -1275,11 +1586,37 @@ class ChildPart implements Disconnectable {
           type);
 
     if ((this._$committedValue as TemplateInstance)?._$template === template) {
+      debugLogEvent?.({
+        kind: 'template updating',
+        template,
+        instance: this._$committedValue as TemplateInstance,
+        parts: (this._$committedValue as TemplateInstance)._parts,
+        options: this.options,
+        values,
+      });
       (this._$committedValue as TemplateInstance)._update(values);
     } else {
       const instance = new TemplateInstance(template as Template, this);
       const fragment = instance._clone(this.options);
+      debugLogEvent?.({
+        kind: 'template instantiated',
+        template,
+        instance,
+        parts: instance._parts,
+        options: this.options,
+        fragment,
+        values,
+      });
       instance._update(values);
+      debugLogEvent?.({
+        kind: 'template instantiated and updated',
+        template,
+        instance,
+        parts: instance._parts,
+        options: this.options,
+        fragment,
+        values,
+      });
       this._commitNode(fragment);
       this._$committedValue = instance;
     }
@@ -1572,6 +1909,13 @@ class AttributePart implements Disconnectable {
         }
         value = this._sanitizer(value ?? '');
       }
+      debugLogEvent?.({
+        kind: 'commit attribute',
+        element: this.element,
+        name: this.name,
+        value,
+        options: this.options,
+      });
       (wrap(this.element) as Element).setAttribute(
         this.name,
         (value ?? '') as string
@@ -1596,10 +1940,25 @@ class PropertyPart extends AttributePart {
       }
       value = this._sanitizer(value);
     }
+    debugLogEvent?.({
+      kind: 'commit property',
+      element: this.element,
+      name: this.name,
+      value,
+      options: this.options,
+    });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (this.element as any)[this.name] = value === nothing ? undefined : value;
   }
 }
+
+// Temporary workaround for https://crbug.com/993268
+// Currently, any attribute starting with "on" is considered to be a
+// TrustedScript source. Such boolean attributes must be set to the equivalent
+// trusted emptyScript value.
+const emptyStringForBooleanAttribute = trustedTypes
+  ? (trustedTypes.emptyScript as unknown as '')
+  : '';
 
 export type {BooleanAttributePart};
 class BooleanAttributePart extends AttributePart {
@@ -1607,8 +1966,18 @@ class BooleanAttributePart extends AttributePart {
 
   /** @internal */
   override _commitValue(value: unknown) {
+    debugLogEvent?.({
+      kind: 'commit boolean attribute',
+      element: this.element,
+      name: this.name,
+      value: !!(value && value !== nothing),
+      options: this.options,
+    });
     if (value && value !== nothing) {
-      (wrap(this.element) as Element).setAttribute(this.name, '');
+      (wrap(this.element) as Element).setAttribute(
+        this.name,
+        emptyStringForBooleanAttribute
+      );
     } else {
       (wrap(this.element) as Element).removeAttribute(this.name);
     }
@@ -1684,6 +2053,16 @@ class EventPart extends AttributePart {
       newListener !== nothing &&
       (oldListener === nothing || shouldRemoveListener);
 
+    debugLogEvent?.({
+      kind: 'commit event listener',
+      element: this.element,
+      name: this.name,
+      value: newListener,
+      options: this.options,
+      removeListener: shouldRemoveListener,
+      addListener: shouldAddListener,
+      oldListener,
+    });
     if (shouldRemoveListener) {
       this.element.removeEventListener(
         this.name,
@@ -1759,6 +2138,12 @@ class ElementPart implements Disconnectable {
     _directiveParent: DirectiveParent = this,
     valueIndex: number
   ): void {
+    debugLogEvent?.({
+      kind: 'commit to element binding',
+      element: this.element,
+      value,
+      options: this.options,
+    });
     // This is a bit of a hack to get the currently rendered values into
     // the spread directive. We don't normally hold on to rendered values,
     // but also don't have a direct way to provoke a part to re-render
@@ -1766,6 +2151,7 @@ class ElementPart implements Disconnectable {
     resolveDirective(this, values[valueIndex]);
     // Don't hold onto value memory
     this.values = undefined;
+
   }
 }
 
@@ -1817,7 +2203,7 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(globalThis.litHtmlVersions ??= []).push('2.0.1');
+(globalThis.litHtmlVersions ??= []).push('2.2.3');
 if (DEV_MODE && globalThis.litHtmlVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

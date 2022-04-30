@@ -1,5 +1,84 @@
 # Change Log
 
+## 2.2.3
+
+### Patch Changes
+
+- [#2732](https://github.com/lit/lit/pull/2732) [`3e181bcb`](https://github.com/lit/lit/commit/3e181bcb3d969775eda799fd6fcae1ead843225b) - Enforce use of file extensions in imports. Fixes an issue with older TypeScript compilers.
+
+## 2.2.2
+
+### Patch Changes
+
+- [#2657](https://github.com/lit/lit/pull/2657) [`a6069c40`](https://github.com/lit/lit/commit/a6069c40e78dff3adeffa7d2abe11c9c05503d22) - Remove readonly restriction from `StyleInfo` interface as addition, deletion, and updating of styles is valid. Expanded `styleMap` documentation with links to lit.dev.
+
+- [#2642](https://github.com/lit/lit/pull/2642) [`badc532c`](https://github.com/lit/lit/commit/badc532c719f7ce42b7cf4fb9ff2d97f4615b021) - Add an additional security brand check to StaticValues; Similar to [#2307](https://github.com/lit/lit/pull/2307)
+
+- [#2691](https://github.com/lit/lit/pull/2691) [`171143bd`](https://github.com/lit/lit/commit/171143bd52720ee4a65844e5ca14667dd0187f8e) - Fixes `ref` bug when auto-bound class method used as a callback could incorrectly receive `undefined`.
+
+- [#2661](https://github.com/lit/lit/pull/2661) [`9a3a38cd`](https://github.com/lit/lit/commit/9a3a38cd7f7b9122c79cd0e220f7ce62130e53f6) - Give a clearer error message when rendering into null/undefined
+
+- [#2646](https://github.com/lit/lit/pull/2646) [`365cd09a`](https://github.com/lit/lit/commit/365cd09a88a1c390045452aac82510c143ffe257) - Clarify that hacking around the template strings array brand error can create security vulnerabilities.
+
+## 2.2.1
+
+### Patch Changes
+
+- [#2635](https://github.com/lit/lit/pull/2635) [`ae358703`](https://github.com/lit/lit/commit/ae3587038873ffcc4934fd008a0b45db4711561e) - Make the event debug logger lazier, doing even less work (with no side effects) even in dev mode unless the page has opted in.
+
+## 2.2.0
+
+### Minor Changes
+
+- [#2401](https://github.com/lit/lit/pull/2401) [`2c9d0008`](https://github.com/lit/lit/commit/2c9d00082a416457ee02107013dd4925bf589628) - Added a devlog events system that may be used for debugging and visualizing Lit's internals.
+
+## 2.1.3
+
+### Patch Changes
+
+- [#2498](https://github.com/lit/lit/pull/2498) [`2a1dc7a1`](https://github.com/lit/lit/commit/2a1dc7a1fd8faf501af3c4c401d822de3fbf2f9e) - Replace 'rare' with 'invalid' in svg tag function JSDocs.
+
+- [#2459](https://github.com/lit/lit/pull/2459) [`23df9d45`](https://github.com/lit/lit/commit/23df9d4557d8c70820d76aec5c0fd3bce9106e3f) - Fix bindings inside of <title> elements
+
+- [#2479](https://github.com/lit/lit/pull/2479) [`89560520`](https://github.com/lit/lit/commit/89560520f08079dc1b0e91f1096934d9ccabed59) - Expand JSDocs for the `svg` tagged template literal (TTL). The new documentation makes it more clear that the `svg` tag function should only be used for SVG fragments, and not for the `<svg>` HTML element.
+
+## 2.1.2
+
+### Patch Changes
+
+- [#2399](https://github.com/lit/lit/pull/2399) [`5ac025bf`](https://github.com/lit/lit/commit/5ac025bf9610adb7069ef8d88ed6bd96ff730f2f) - Correct typo in `async-directive` module comment
+
+- [#2410](https://github.com/lit/lit/pull/2410) [`b9a6962b`](https://github.com/lit/lit/commit/b9a6962b84c841eaabd5c4cbf8687ff34dbfe511) - Correct the link path of CONTRIBUTING.md in README.md files
+
+## 2.1.1
+
+### Patch Changes
+
+- [#2388](https://github.com/lit/lit/pull/2388) [`5860533f`](https://github.com/lit/lit/commit/5860533f25180b6e8b616105cf85037216054d7a) - Fix choose directive jsdoc code example.
+
+## 2.1.0
+
+### Minor Changes
+
+- [#2337](https://github.com/lit/lit/pull/2337) [`fcc2b3d0`](https://github.com/lit/lit/commit/fcc2b3d0054e69e6f76588ea9f440117b6d0deed) - Add a `keyed(key, value)` directive that clears a part if the key changes.
+
+* [#2335](https://github.com/lit/lit/pull/2335) [`d319cf5f`](https://github.com/lit/lit/commit/d319cf5fde1c2b70185ee9a6252067ed0edaf2fc) - Add `when`, `map`, `join`, and `range` directives.
+
+- [#2341](https://github.com/lit/lit/pull/2341) [`1d563e83`](https://github.com/lit/lit/commit/1d563e830c02a2d1a22e1e939f1ace971b1d1ae7) - Add choose() directive
+
+### Patch Changes
+
+- [#2307](https://github.com/lit/lit/pull/2307) [`221cb0a9`](https://github.com/lit/lit/commit/221cb0a90787631dcc867959de19febd2ebd3fd0) - Added an additional check to prevent spoofing of internal lit types in data bindings.
+
+## 2.0.2
+
+### Patch Changes
+
+- [#2146](https://github.com/lit/lit/pull/2146) [`8bb33c88`](https://github.com/lit/lit/commit/8bb33c882bf5a9a215efac9dd9dd8665285a417d) - Work around a Chrome bug with trusted types: https://crbug.com/993268
+
+* [#2236](https://github.com/lit/lit/pull/2236) [`5fc3818a`](https://github.com/lit/lit/commit/5fc3818afa43365b90b921ea0fd8f41e970e767f) - Prevent `polyfillSupport.noPatchSupported` from implicitly being `any`.
+  Deduplicate types for `DevMode`-suffixed polyfill support functions.
+
 ## 2.0.1
 
 ### Patch Changes

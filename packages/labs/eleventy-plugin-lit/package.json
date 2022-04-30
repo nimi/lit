@@ -1,0 +1,53 @@
+{
+  "name": "@lit-labs/eleventy-plugin-lit",
+  "version": "0.2.1",
+  "description": "Eleventy plugin for rendering Lit components.",
+  "author": "Google LLC",
+  "license": "BSD-3-Clause",
+  "homepage": "https://lit.dev/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/labs/eleventy-plugin-lit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "default": "./index.js"
+    }
+  },
+  "files": [
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/worker/worker.{d.ts,d.ts.map,js,js.map}",
+    "/worker/package.json"
+  ],
+  "engines": {
+    "node": ">=12.16.0"
+  },
+  "scripts": {
+    "build": "npm run clean && npm run build:ts",
+    "build:ts": "tsc --build",
+    "build:ts:watch": "tsc --build --watch",
+    "build:demo": "cd demo && NODE_OPTIONS=--experimental-vm-modules eleventy",
+    "build:demo:watch": "cd demo && NODE_OPTIONS=--experimental-vm-modules eleventy --watch",
+    "clean": "rimraf \"index.{js,js.map,d.ts,d.ts.map}\" \"test/**/*.{js,js.map,d.ts,d.ts.map}\" \"worker/**/*.{js,js.map,d.ts,d.ts.map}\" demo/_site *.tsbuildinfo",
+    "serve:demo": "wds --watch --node-resolve --open demo/_site/test",
+    "test": "uvu test/ \".*-test.js$\""
+  },
+  "dependencies": {
+    "@lit-labs/ssr": "^2.0.1",
+    "lit": "^2.0.2"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^1.0.0",
+    "@web/dev-server": "^0.1.11",
+    "@webcomponents/template-shadowroot": "^0.1.0",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.1.3",
+    "uvu": "^0.5.3"
+  }
+}

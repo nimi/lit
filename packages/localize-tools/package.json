@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize-tools",
-  "version": "0.4.0",
+  "version": "0.6.3",
   "publishConfig": {
     "access": "public"
   },
@@ -20,8 +20,8 @@
   "type": "module",
   "scripts": {
     "clean": "git clean -dXn | sed 's/^Would remove //' | grep -v node_modules | xargs rm -rf",
-    "build": "npm run clean && npm run generate-json-schema && tsc --build",
-    "generate-json-schema": "typescript-json-schema tsconfig.schema.json ConfigFile --include=src/types/config.d.ts --required --noExtraProps > config.schema.json",
+    "build": "npm run clean && tsc --build && npm run generate-json-schema",
+    "generate-json-schema": "typescript-json-schema tsconfig.schema.json ConfigFile --include=lib/types/config.d.ts --required --noExtraProps > config.schema.json",
     "test": "npm run test:unit && npm run test:check-tsc",
     "test:unit": "uvu lib/tests '\\.test\\.js$' --ignore 'ssr\\.unit\\.test\\.js$' && uvu lib/tests '\\ssr\\.unit\\.test\\.js$'",
     "test:update-goldens": "UPDATE_TEST_GOLDENS=true npm run test:unit",
@@ -41,15 +41,15 @@
     "fast-glob": "^3.2.7",
     "fs-extra": "^10.0.0",
     "jsonschema": "^1.4.0",
-    "lit": "^2.0.0",
+    "lit": "^2.2.0",
     "minimist": "^1.2.5",
     "parse5": "^6.0.1",
     "source-map-support": "^0.5.19",
     "typescript": "^4.3.5"
   },
   "devDependencies": {
-    "@lit-labs/ssr": "^1.0.0",
-    "@lit/ts-transformers": "^1.0.2",
+    "@lit-labs/ssr": "^2.1.0",
+    "@lit/ts-transformers": "^1.1.0",
     "@types/diff": "^5.0.0",
     "@types/fs-extra": "^9.0.1",
     "@types/minimist": "^1.2.0",

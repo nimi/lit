@@ -207,6 +207,16 @@ suite('lit-html', () => {
       assertRender(html`<a>${'foo'}</a>${'bar'}`, '<a>foo</a>bar');
     });
 
+    test('text in raw text elements', () => {
+      assertRender(
+        html`<script type="foo">${'A'}</script>`,
+        '<script type="foo">A</script>'
+      );
+      assertRender(html`<style>${'A'}</style>`, '<style>A</style>');
+      assertRender(html`<title>${'A'}</title>`, '<title>A</title>');
+      assertRender(html`<textarea>${'A'}</textarea>`, '<textarea>A</textarea>');
+    });
+
     test('text in raw text element after <', () => {
       // It doesn't matter much what marker we use in <script>, <style> and
       // <textarea> since comments aren't parsed and we have to search the text
@@ -1229,6 +1239,7 @@ suite('lit-html', () => {
       let event: Event | undefined = undefined;
       const listener = function (this: any, e: any) {
         event = e;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         thisValue = this;
       };
       const host = {} as EventTarget;
@@ -1253,6 +1264,7 @@ suite('lit-html', () => {
       let thisValue;
       const listener = {
         handleEvent(_e: Event) {
+          // eslint-disable-next-line @typescript-eslint/no-this-alias
           thisValue = this;
         },
       };
@@ -2272,6 +2284,7 @@ suite('lit-html', () => {
         return 'initial';
       }
       override update(_part: Part, [promise]: Parameters<this['render']>) {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         aDirectiveInst = this;
         if (promise !== this.promise) {
           this.promise = promise;
@@ -3060,6 +3073,26 @@ suite('lit-html', () => {
         {values: ['bad', safe], name: 'foo', type: 'property', nodeName: 'DIV'},
       ]);
     });
+  });
+
+  test(`don't render simple spoof template results`, () => {
+    const spoof = {
+      ['_$litType$']: 1,
+      strings: ['<div>spoofed string</div>'],
+      values: [],
+    };
+    const template = html`<div>${spoof}</div>`;
+    let threwError = false;
+    try {
+      render(template, container);
+    } catch {
+      threwError = true;
+    }
+    assert.equal(stripExpressionMarkers(container.innerHTML), '');
+    assert.isTrue(
+      threwError,
+      `Expected an error when rendering a spoofed template result`
+    );
   });
 
   const warningsSuiteFunction = DEV_MODE ? suite : suite.skip;

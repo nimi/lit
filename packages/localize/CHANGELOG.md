@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.11.2
+
+### Patch Changes
+
+- [#2402](https://github.com/lit/lit/pull/2402) [`a638841d`](https://github.com/lit/lit/commit/a638841d8ba76e43cf83a2516e2cfc7a9c2ce27e) - Trivial: reformat markdown files
+
+## 0.11.1
+
+### Patch Changes
+
+- [#2286](https://github.com/lit/lit/pull/2286) [`52c4f32e`](https://github.com/lit/lit/commit/52c4f32e7aa67120364a9c64a1696909c711ff88) - Update README to point to new full docs at lit.dev
+
 ## 0.11.0
 
 ### Minor Changes
@@ -125,19 +137,11 @@ Before:
 class HomePage {
   hello() {
     // msgdesc: Greeting to Earth
-    return msg(
-      html`
-        Hello World
-      `
-    );
+    return msg(html`Hello World`);
   }
   goodbye() {
     // msgdesc: Farewell to Earth
-    return msg(
-      html`
-        Goodbye World
-      `
-    );
+    return msg(html`Goodbye World`);
   }
 }
 ```
@@ -147,24 +151,14 @@ After:
 ```js
 class HomePage {
   hello() {
-    return msg(
-      html`
-        Hello World
-      `,
-      {
-        desc: 'Home page / Greeting to Earth'
-      }
-    );
+    return msg(html`Hello World`, {
+      desc: 'Home page / Greeting to Earth',
+    });
   }
   goodbye() {
-    return msg(
-      html`
-        Goodbye World
-      `,
-      {
-        desc: 'Home page / Farewell to Earth'
-      }
-    );
+    return msg(html`Goodbye World`, {
+      desc: 'Home page / Farewell to Earth',
+    });
   }
 }
 ```
@@ -186,23 +180,13 @@ class HomePage {
   Before:
 
   ```ts
-  msg(
-    name =>
-      html`
-        Hello <b>${name}</b>!
-      `,
-    {args: [getUsername()]}
-  );
+  msg((name) => html`Hello <b>${name}</b>!`, {args: [getUsername()]});
   ```
 
   After:
 
   ```ts
-  msg(
-    html`
-      Hello <b>${getUsername()}</b>!
-    `
-  );
+  msg(html`Hello <b>${getUsername()}</b>!`);
   ```
 
   Plain strings containing expressions must now be tagged with the new `str`
@@ -365,9 +349,7 @@ class HomePage {
   msg(
     'hello',
     (url: string, name: string) =>
-      html`
-        Hello ${name}, click <a href="${url}">here</a>!
-      `,
+      html`Hello ${name}, click <a href="${url}">here</a>!`,
     'World',
     'https://www.example.com/'
   );
